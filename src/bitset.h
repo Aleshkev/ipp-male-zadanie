@@ -1,11 +1,11 @@
-
 #include <stdbool.h>
-#include <stdio.h>
+#include <stdlib.h>
 
-typedef bitset_t;
+struct _bitset_impl;
+typedef struct _bitset_impl *bitset_t;
 
 bitset_t bitset_calloc(size_t n);
-void bitset_free(bitset_t b);
-bool bitset_get(bitset_t b, size_t i);
-void bitset_set(bitset_t b, size_t i, bool x);
-void print_bitset(bitset_t b, size_t n);
+void bitset_free(bitset_t o);
+bool bitset_get(bitset_t o, size_t i);
+void bitset_set(bitset_t o, size_t i, bool x);
+void bitset_print(bitset_t o, size_t n);

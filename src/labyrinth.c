@@ -1,66 +1,52 @@
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "arithmetic.h"
 #include "bitset.h"
-#include "io.h"
-
-#define ABORT(N)                    \
-  {                                 \
-    fprintf(stderr, "ERROR %i", N); \
-    return 1;                       \
-  }
+#include "error.h"
+#include "grid.h"
+#include "parser.h"
+#include "vector.h"
 
 int main() {
+  parser_t parser = new_parser();
 
-  size_t n_dimensions, *dimensions;
+  vector_t dimensions = NULL, start_pos = NULL, stop_pos = NULL;
+  dimensions = parser_read_vector(parser);
+  CHECK_INPUT(1, !parser_is_input_ok(parser));
+  vector_print(dimensions), printf("\n");
+  CHECK_INPUT(1, vector_size(dimensions) == 0);
 
-  bool malformed = 0, error = 0;
-  dimensions = eat_line_1(&n_dimensions, &malformed, &error);
-  if (malformed) ABORT(1);
-  if (dimensions == NULL) ABORT(0);
-  if (ferror(stdin) || error) {
-    free(dimensions);
-    ABORT(0);
-  }
+  grid_t grid = new_grid(dimensions);
 
-  size_t volume = 1;
-  for (size_t i = 0; i < n_dimensions; ++i) volume *= dimensions[i];
+  size_t n_dimensions = vector_size(dimensions),
+         volume = vector_get(dimensions, 0);
+  for (size_t i = 1; i < n_dimensions; ++i)
+    volume = mulcap(volume, vector_get(dimensions, i));
 
-  size_t *start_pos, *end_pos;
-  start_pos =
-      eat_line_2_or_3(n_dimensions, dimensions, volume, &malformed, &error);
-  end_pos =
-      eat_line_2_or_3(n_dimensions, dimensions, volume, &malformed, &error);
-  if (start_pos == NULL || end_pos == NULL || ferror(stdin) || error) {
-    free(dimensions);
-    ABORT(0);
-  }
+  printf("%zu\n", volume);
+  CHECK_INPUT(1, volume == 0);
+  CHECK_INPUT(0, volume == SIZE_MAX);
 
-  unsigned *board;
-  board = eat_line_4(n_dimensions, dimensions, volume, &malformed, &error);
+  start_pos = parser_read_vector(parser);
+  CHECK_INPUT(2, !parser_is_input_ok(parser));
+  vector_print(start_pos), printf("\n");
+  CHECK_INPUT(2, vector_size(start_pos) != n_dimensions);
 
-  // Line 2 & 3.
+  stop_pos = parser_read_vector(parser);
+  CHECK_INPUT(3, !parser_is_input_ok(parser));
+  vector_print(stop_pos), printf("\n");
+  CHECK_INPUT(3, vector_size(stop_pos) != n_dimensions);
 
-  printf("[%i %i]", malformed, error);
+  bitset_t board = parser_read_bitset(parser, volume);
+  CHECK_INPUT(4, !parser_is_input_ok(parser));
+  bitset_print(board, volume), printf("\n");
 
-  for (size_t i = 0; i < n_dimensions; ++i) {
-    printf("%zu ", dimensions[i]);
-  }
-  printf("\n");
-  for (size_t i = 0; i < n_dimensions; ++i) {
-    printf("%zu ", start_pos[i]);
-  }
-  printf("\n");
-  for (size_t i = 0; i < n_dimensions; ++i) {
-    printf("%zu ", end_pos[i]);
-  }
-  printf("\n");
+  parser_eat_trailing_whitespace(parser);
+  CHECK_INPUT(5, !parser_is_input_ok(parser));
 
-  print_bitset(board, volume);
-
-  free(dimensions);
+  clean_up();
   return 0;
 }

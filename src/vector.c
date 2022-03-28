@@ -1,7 +1,10 @@
+#include "vector.h"
+
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 
-#include "vector.h"
+#include "error.h"
 
 typedef size_t T;
 
@@ -12,38 +15,41 @@ struct _vector_impl {
 typedef struct _vector_impl *vector_t;
 
 // Creates a new empty vector. Returns the object, or NULL on alloc failure.
-vector_t vector_calloc() {
-  vector_t v = malloc(sizeof *v);
-  if (v == NULL) return NULL;
+vector_t new_vector() {
+  vector_t v;
+  ALLOC(v);
 
   v->n_elements = 0, v->space = 8;
-
-  v->elements = calloc(v->space, sizeof *v->elements);
-  if (v->elements == NULL) return free(v), NULL;
+  ALLOC_N(v->elements, v->space);
 
   return v;
 }
 
-// Frees. Nothing to do if it fails.
-void vector_free(vector_t v) {
-  free(v->elements), v->elements = NULL;
-  free(v);
+void vector_reserve(vector_t this, size_t n) {
+  while (n + 1 >= this->space) {
+    this->space *= 2;
+    REALLOC_N(this->elements, this->space);
+  }
 }
 
 // Appends an element. Returns the object, or NULL on alloc failure.
-vector_t *vector_append(vector_t v, size_t x) {
-  while (v->n_elements + 1 < v->space) {
-    v->space *= 2;
+void vector_append(vector_t this, size_t x) {
+  vector_reserve(this, this->n_elements + 1);
+  this->elements[this->n_elements++] = x;
+}
 
-    v->elements = realloc(v->elements, v->space * sizeof *v->elements);
-    if (v->elements == NULL) return free(v), NULL;
+vector_t vector_copy(vector_t w) {
+  vector_t v = new_vector();
+  for (size_t i = 0; i < vector_size(w); ++i) {
+    vector_append(v, vector_get(w, i));
   }
-  v->elements[v->n_elements++] = x;
   return v;
 }
 
 // Removes an element from the end of the vector. Never fails.
 void vector_pop(vector_t v) {
+  if (v == NULL) return;
+
   assert(v->n_elements > 0);
 
   v->elements[v->n_elements--] = 0;
@@ -55,3 +61,12 @@ size_t vector_size(vector_t v) { return v->n_elements; }
 T vector_get(vector_t v, size_t i) { return v->elements[i]; }
 T vector_set(vector_t v, size_t i, T x) { return v->elements[i] = x; }
 T *vector_ref(vector_t v, size_t i) { return &v->elements[i]; }
+
+void vector_print(vector_t v) {
+  printf("[");
+  for (size_t i = 0; i < v->n_elements; ++i) {
+    if (i > 0) printf(", ");
+    printf("%zu", v->elements[i]);
+  }
+  printf("]");
+}

@@ -3,3 +3,5 @@ a
 labyrinth
 mmap_address.bin
 *.ipch
+
+tests/

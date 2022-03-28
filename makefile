@@ -22,6 +22,6 @@ clean:
 	$(RM) tests/*.prog.out tests/*.prog.err
 
 test:
-	bash ./test.sh labyrinth tests
+	bash ./test.sh ./labyrinth tests
 
 -include $(DEPS)

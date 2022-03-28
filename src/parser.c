@@ -1,3 +1,4 @@
+#include "parser.h"
 
 #include <ctype.h>
 #include <math.h>
@@ -8,17 +9,19 @@
 
 #include "bitset.h"
 #include "vector.h"
+#include "error.h"
 
 struct _parser_impl {
   bool system_ok, input_ok;
 };
 typedef struct _parser_impl *parser_t;
 
-parser_t parser_calloc() {
+parser_t new_parser() {
   parser_t p;
-  if (p = calloc(1, sizeof *p) == NULL) return NULL;
+  ALLOC(p);
 
   p->system_ok = p->input_ok = true;
+  return p;
 }
 
 int peekchar() {
@@ -40,60 +43,68 @@ int hexdigit(int c) {
 #define STR(X) _STR(X)
 const char SIZE_MAX_STR[] = STR(SIZE_MAX);
 
-void reversec(char *start, char *stop) {
-  for (size_t i = 0; start + 2 * i < stop; ++i) {
-    swap(start + i, stop - i - 1);
-  }
-}
+// void reversec(char *start, char *stop) {
+//   for (size_t i = 0; start + 2 * i < stop; ++i) {
+//     swap(start + i, stop - i - 1);
+//   }
+// }
 
 // [0-9]+
 size_t parser_eat_unsigned(parser_t p) {
   char as_string[128];
   size_t n;
-  for (n = 0; isdigit(peekchar()) && n < 128; ++n) {
+  for (n = 0; isdigit(peekchar()) && n + 1 < 128;) {
     as_string[n++] = getchar();
   }
-  reverse(as_string, as_string + n);
+  as_string[n] = '\0';
+  size_t x;
+  sscanf(as_string, "%zu", &x);
+  printf("s:%zu:", x);
+  return x;
 }
+
+#define INPUT_ERROR()    \
+  {                      \
+    p->input_ok = false; \
+    return;              \
+  }
 
 // [^\S\n]{%n,}
 void parser_eat_spaces(parser_t p, size_t n) {
   size_t eaten = 0;
   for (; isspace(peekchar()) && peekchar() != '\n'; getchar()) ++eaten;
-  if (eaten < n) return p->input_ok = false;
+  if (eaten < n) INPUT_ERROR();
 }
 
 // %c
 void parser_eat_symbol(parser_t p, char c) {
-  if (peekchar() != c) return p->input_ok = false;
+  if (peekchar() != c) INPUT_ERROR();
   getchar();
 }
 
 // \s*$
 void parser_eat_trailing_whitespace(parser_t p) {
   while (isspace(peekchar())) getchar();
-  if (peekchar() != EOF) p->input_ok = false;
+  if (peekchar() != EOF) INPUT_ERROR();
 }
 
 // Skips spaces, reads numbers until an LF, eats the LF.
 vector_t parser_read_vector(parser_t p) {
-  vector_t v = vector_calloc();
-  if (v == NULL) return NULL;
+  vector_t v = new_vector();
 
-  for (size_t i = 0; isdigit(peekchar()) && p->input_ok; ++i) {
+  for (size_t i = 0; peekchar() != '\n' && p->input_ok; ++i) {
     parser_eat_spaces(p, (i == 0 ? 0 : 1));
 
     size_t x = parser_eat_unsigned(p);
-    v = vector_append(v, x);
-    if (v == NULL) return NULL;
+    vector_append(v, x);
+    vector_print(v), printf("\n");
   }
   parser_eat_symbol(p, '\n');
   return v;
 }
 
-vector_t parser_read_bitset(parser_t p, size_t n) {
-  bitset_t b = bitset_calloc(n);
-  if (b == NULL) return NULL;
+bitset_t parser_read_bitset(parser_t p, size_t n) {
+  bitset_t b = new_bitset(n);
 
   if (peekchar() == 'R') {
     parser_eat_symbol(p, 'R');
@@ -128,4 +139,9 @@ vector_t parser_read_bitset(parser_t p, size_t n) {
   }
 
   parser_eat_trailing_whitespace(p);
+
+  return b;
 }
+
+bool parser_is_input_ok(parser_t p) { return p->input_ok; }
+bool parser_is_system_ok(parser_t p) { return p->system_ok; }
