@@ -5,12 +5,11 @@
 #include "error.h"
 
 void memory_error() {
-  printf("ERROR 0\n");
-  exit(1);
+  input_error(0, "<memory error>");
 }
 
 void input_error(int code, char *info) {
-  fprintf(stdout, "\033[0;91m%s\033[0m\n", info);
+  // fprintf(stdout, "\033[0;91m%s\033[0m\n", info);
   fprintf(stderr, "ERROR %i\n", code);
 
   clean_up(), exit(-1);

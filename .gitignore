@@ -5,3 +5,4 @@ mmap_address.bin
 *.ipch
 
 tests/
+tests2/

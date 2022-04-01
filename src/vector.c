@@ -14,7 +14,7 @@ struct _vector_impl {
 };
 typedef struct _vector_impl *vector_t;
 
-// Creates a new empty vector. Returns the object, or NULL on alloc failure.
+// Create a vector.
 vector_t new_vector() {
   vector_t v;
   ALLOC(v);
@@ -47,20 +47,21 @@ vector_t vector_copy(vector_t w) {
 }
 
 // Removes an element from the end of the vector. Never fails.
-void vector_pop(vector_t v) {
-  if (v == NULL) return;
-
+size_t vector_pop(vector_t v) {
+  // if (v == NULL) return;
   assert(v->n_elements > 0);
-
+  size_t x = v->elements[v->n_elements - 1];
   v->elements[v->n_elements--] = 0;
+  return x;
 }
 
-// These never fail.
-
 size_t vector_size(vector_t v) { return v->n_elements; }
-T vector_get(vector_t v, size_t i) { return v->elements[i]; }
-T vector_set(vector_t v, size_t i, T x) { return v->elements[i] = x; }
-T *vector_ref(vector_t v, size_t i) { return &v->elements[i]; }
+T vector_get(vector_t v, size_t i) { return *vector_ref(v, i); }
+T vector_set(vector_t v, size_t i, T x) { return *vector_ref(v, i) = x; }
+T *vector_ref(vector_t v, size_t i) {
+  assert(i < v->n_elements);
+  return &v->elements[i];
+}
 
 void vector_print(vector_t v) {
   printf("[");

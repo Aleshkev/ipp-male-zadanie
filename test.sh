@@ -5,7 +5,7 @@ red='\033[0;31m'
 gray='\033[0;34m'
 no_color='\033[0m'
 
-for f in $dir/*.in; do
+for f in $(find $dir -name '*.in'); do
     in=$f
     out=${f%in}out
     err=${f%in}err
@@ -13,6 +13,7 @@ for f in $dir/*.in; do
     prog_err=${f%in}prog.err
 
     echo -n "Example $f"
+    # echo
 
     $prog <"$in" >"$prog_out" 2>"$prog_err"
 

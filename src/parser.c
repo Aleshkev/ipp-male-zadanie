@@ -19,8 +19,6 @@ typedef struct _parser_impl *parser_t;
 parser_t new_parser() {
   parser_t p;
   ALLOC(p);
-
-  p->system_ok = p->input_ok = true;
   return p;
 }
 
@@ -35,7 +33,7 @@ char fmtchar(char c) { return (c == '\n' ? '^' : c); }
 int hexdigit(int c) {
   c = tolower(c);
   return '0' <= c && c <= '9'   ? c - '0'  //
-         : 'a' <= c && c <= 'f' ? c - 'a'
+         : 'a' <= c && c <= 'f' ? 10 + c - 'a'
                                 : -1;
 }
 
@@ -63,48 +61,39 @@ size_t parser_eat_unsigned(parser_t p) {
   return x;
 }
 
-#define INPUT_ERROR()    \
-  {                      \
-    p->input_ok = false; \
-    return;              \
-  }
-
 // [^\S\n]{%n,}
 void parser_eat_spaces(parser_t p, size_t n) {
-  size_t eaten = 0;
-  for (; isspace(peekchar()) && peekchar() != '\n'; getchar()) ++eaten;
-  if (eaten < n) INPUT_ERROR();
+  size_t spaces_eaten = 0;
+  for (; isspace(peekchar()) && peekchar() != '\n'; getchar()) ++spaces_eaten;
+  CHECK_INPUT(1, spaces_eaten < n);
 }
 
 // %c
 void parser_eat_symbol(parser_t p, char c) {
-  if (peekchar() != c) INPUT_ERROR();
+  CHECK_INPUT(1, peekchar() != c);
   getchar();
 }
 
 // \s*$
 void parser_eat_trailing_whitespace(parser_t p) {
   while (isspace(peekchar())) getchar();
-  if (peekchar() != EOF) INPUT_ERROR();
+  CHECK_INPUT(1, peekchar() != EOF);
 }
 
 // Skips spaces, reads numbers until an LF, eats the LF.
 vector_t parser_read_vector(parser_t p) {
   vector_t v = new_vector();
-
-  for (size_t i = 0; peekchar() != '\n' && p->input_ok; ++i) {
-    parser_eat_spaces(p, (i == 0 ? 0 : 1));
-
-    size_t x = parser_eat_unsigned(p);
-    vector_append(v, x);
+  for (size_t i = 0; peekchar() != '\n'; ++i) {
+    vector_append(v, parser_eat_unsigned(p));
+    parser_eat_spaces(p, (peekchar() == '\n' ? 0 : 1));
     // vector_print(v), printf("\n");
   }
   parser_eat_symbol(p, '\n');
   return v;
 }
 
-bitset_t parser_read_bitset(parser_t p, size_t n) {
-  bitset_t b = new_bitset(n);
+bitset_t parser_read_board(parser_t p, size_t n) {
+  bitset_t board = new_bitset(n);
 
   if (peekchar() == 'R') {
     parser_eat_symbol(p, 'R');
@@ -113,10 +102,34 @@ bitset_t parser_read_bitset(parser_t p, size_t n) {
     size_t b = (parser_eat_spaces(p, 1), parser_eat_unsigned(p));
     size_t m = (parser_eat_spaces(p, 1), parser_eat_unsigned(p));
     size_t r = (parser_eat_spaces(p, 1), parser_eat_unsigned(p));
-    size_t s0 = (parser_eat_spaces(p, 1), parser_eat_unsigned(p));
+    size_t s_0 = (parser_eat_spaces(p, 1), parser_eat_unsigned(p));
+
+    // printf("%zu %zu %zu %zu %zu\n", a, b, m, r, s_0);
+
+    CHECK_INPUT(4, a > UINT32_MAX);
+    CHECK_INPUT(4, b > UINT32_MAX);
+    CHECK_INPUT(4, m > UINT32_MAX);
+    CHECK_INPUT(4, r > UINT32_MAX);
+    CHECK_INPUT(4, s_0 > UINT32_MAX);
+
+    size_t s_i = s_0;
+    for (size_t i = 1; i <= r; ++i) {
+      s_i = (s_i * a % m + b) % m;
+      size_t w_i = s_i % n;
+
+      size_t step = ((size_t)1 << 32);
+      for (size_t j = w_i; j < (n < step ? n : n - step + 1);
+           j += ((size_t)1 << 32)) {
+        // printf("%zu ", j);
+        bitset_set(board, j, 1);
+      }
+    }
 
   } else {
     parser_eat_symbol(p, '0'), parser_eat_symbol(p, 'x');
+
+    // First we read the number so that the i-th most significant digit is in
+    // the i-th bit of the bitset.
     bool is_leading = true;
     size_t n_bin_digits = 0;
     while (hexdigit(peekchar()) >= 0) {
@@ -124,27 +137,22 @@ bitset_t parser_read_bitset(parser_t p, size_t n) {
       getchar();
 
       for (size_t i = 4; i-- > 0;) {
-        int bin_digit = (((size_t)hex_digit) & (1 << i));
+        int bin_digit = (((size_t)hex_digit) & (1 << i)) > 0;
         if (bin_digit == 0 && is_leading) continue;
         is_leading = false;
-        ++n_bin_digits;
-        if (n_bin_digits >= n) {
-          p->input_ok = false;
-          return b;
-        }
-        bitset_set(b, n - n_bin_digits++ - 1, bin_digit);
+        CHECK_INPUT(4, n_bin_digits + 1 > n);
+        bitset_set(board, n_bin_digits++, bin_digit);
       }
     }
-    size_t shift_by = n - n_bin_digits;
-    for (size_t i = 0; i < n_bin_digits; ++i)
-      bitset_set(b, i, bitset_get(b, i + shift_by));
-    for (size_t i = n_bin_digits; i < n; ++i) bitset_set(b, i, 0);
+
+    // Then we correct the order of the bits so that the i-th least
+    // significant digit is the i-th bit of the bitset.
+    if (n_bin_digits < 1) n_bin_digits = 1;
+    for (size_t i = 0, j = n_bin_digits - 1; i < j; ++i, --j)
+      bitset_swap(board, i, j);
   }
 
   parser_eat_trailing_whitespace(p);
 
-  return b;
+  return board;
 }
-
-bool parser_is_input_ok(parser_t p) { return p->input_ok; }
-bool parser_is_system_ok(parser_t p) { return p->system_ok; }

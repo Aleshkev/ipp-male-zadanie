@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "arithmetic.h"
+#include "bfs.h"
 #include "bitset.h"
 #include "error.h"
 #include "grid.h"
@@ -15,38 +16,38 @@ int main() {
 
   vector_t dimensions = NULL, start_pos = NULL, stop_pos = NULL;
   dimensions = parser_read_vector(parser);
-  CHECK_INPUT(1, !parser_is_input_ok(parser));
-  vector_print(dimensions), printf("\n");
+  // CHECK_INPUT(1, !parser_is_input_ok(parser));
+  // vector_print(dimensions), printf("\n");
   CHECK_INPUT(1, vector_size(dimensions) == 0);
 
   grid_t grid = new_grid(dimensions);
 
-  size_t n_dimensions = vector_size(dimensions),
-         volume = vector_get(dimensions, 0);
-  for (size_t i = 1; i < n_dimensions; ++i)
-    volume = mulcap(volume, vector_get(dimensions, i));
-
-  printf("%zu\n", volume);
-  CHECK_INPUT(1, volume == 0);
-  CHECK_INPUT(0, volume == SIZE_MAX);
+  // printf("%zu\n", grid_volume(grid));
+  CHECK_INPUT(1, grid_volume(grid) == 0);
+  CHECK_INPUT(0, grid_volume(grid) == SIZE_MAX);
 
   start_pos = parser_read_vector(parser);
-  CHECK_INPUT(2, !parser_is_input_ok(parser));
-  vector_print(start_pos), printf("\n");
-  CHECK_INPUT(2, vector_size(start_pos) != n_dimensions);
+  // CHECK_INPUT(2, !parser_is_input_ok(parser));
+  // vector_print(start_pos), printf("\n");
+  CHECK_INPUT(2, vector_size(start_pos) != grid_k(grid));
+  
 
   stop_pos = parser_read_vector(parser);
-  CHECK_INPUT(3, !parser_is_input_ok(parser));
-  vector_print(stop_pos), printf("\n");
-  CHECK_INPUT(3, vector_size(stop_pos) != n_dimensions);
+  // CHECK_INPUT(3, !parser_is_input_ok(parser));
+  // vector_print(stop_pos), printf("\n");
+  CHECK_INPUT(3, vector_size(stop_pos) != grid_k(grid));
 
-  bitset_t board = parser_read_bitset(parser, volume);
-  CHECK_INPUT(4, !parser_is_input_ok(parser));
-  bitset_print(board, volume), printf("\n");
+  bitset_t board = parser_read_board(parser, grid_volume(grid));
+  // CHECK_INPUT(4, !parser_is_input_ok(parser));
+  // bitset_print(board), printf("\n");
 
-  // parser_eat_trailing_whitespace(parser);
-  // CHECK_INPUT(5, !parser_is_input_ok(parser));
+  size_t ans = bfs(grid, board, grid_rank(grid, start_pos), grid_rank(grid, stop_pos));
 
-  // clean_up();
+  if (ans == SIZE_MAX)
+    printf("NO WAY\n");
+  else
+    printf("%zu\n", ans);
+
+  clean_up();
   return 0;
 }
