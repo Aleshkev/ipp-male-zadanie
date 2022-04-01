@@ -1,8 +1,9 @@
 prog="$1"
 dir="$2"
 
-red='\033[0;91m'
-not_red='\033[0m'
+red='\033[0;31m'
+gray='\033[0;34m'
+no_color='\033[0m'
 
 for f in $dir/*.in; do
     in=$f
@@ -26,6 +27,8 @@ for f in $dir/*.in; do
     01) echo -e "$red has incorrect stderr";;
     00) echo " works correctly";;
     esac
-    echo -n -e $not_red
+    echo -e "$gray"
+    cat "$prog_out"
+    echo -n -e $no_color
 
 done

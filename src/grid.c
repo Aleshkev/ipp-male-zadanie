@@ -1,10 +1,10 @@
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <assert.h>
 
-#include "vector.h"
 #include "error.h"
+#include "vector.h"
 
 struct _grid_impl {
   size_t k;
@@ -47,5 +47,6 @@ size_t grid_move(grid_t grid, size_t id, size_t axis, int delta) {
   assert(delta == -1 || delta == +1);
   size_t x = grid_unrank(grid, id, axis);
   if ((x == 0 && delta == -1)) return SIZE_MAX;
+  // if ((x == vector_get(grid->n, axis) - 1 && delta == 1)) return SIZE_MAX;
   return id + delta * vector_get(grid->n_pref, axis);
 }

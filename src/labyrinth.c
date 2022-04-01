@@ -44,9 +44,9 @@ int main() {
   CHECK_INPUT(4, !parser_is_input_ok(parser));
   bitset_print(board, volume), printf("\n");
 
-  parser_eat_trailing_whitespace(parser);
-  CHECK_INPUT(5, !parser_is_input_ok(parser));
+  // parser_eat_trailing_whitespace(parser);
+  // CHECK_INPUT(5, !parser_is_input_ok(parser));
 
-  clean_up();
+  // clean_up();
   return 0;
 }
