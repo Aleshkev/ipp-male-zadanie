@@ -61,20 +61,17 @@ size_t parser_eat_unsigned(parser_t p) {
   return x;
 }
 
-// [^\S\n]{%n,}
 void parser_eat_spaces(parser_t p, size_t n) {
   size_t spaces_eaten = 0;
   for (; isspace(peekchar()) && peekchar() != '\n'; getchar()) ++spaces_eaten;
   CHECK_INPUT(1, spaces_eaten < n);
 }
 
-// %c
-void parser_eat_symbol(parser_t p, char c) {
-  CHECK_INPUT(1, peekchar() != c);
+void parser_eat_symbol(parser_t p, char symbol) {
+  CHECK_INPUT(1, peekchar() != symbol);
   getchar();
 }
 
-// \s*$
 void parser_eat_trailing_whitespace(parser_t p) {
   while (isspace(peekchar())) getchar();
   CHECK_INPUT(1, peekchar() != EOF);
@@ -83,6 +80,7 @@ void parser_eat_trailing_whitespace(parser_t p) {
 // Skips spaces, reads numbers until an LF, eats the LF.
 vector_t parser_read_vector(parser_t p) {
   vector_t v = new_vector();
+  parser_eat_spaces(p, 0);
   for (size_t i = 0; peekchar() != '\n'; ++i) {
     vector_append(v, parser_eat_unsigned(p));
     parser_eat_spaces(p, (peekchar() == '\n' ? 0 : 1));
@@ -94,6 +92,8 @@ vector_t parser_read_vector(parser_t p) {
 
 bitset_t parser_read_board(parser_t p, size_t n) {
   bitset_t board = new_bitset(n);
+
+  parser_eat_spaces(p, 0);
 
   if (peekchar() == 'R') {
     parser_eat_symbol(p, 'R');
@@ -151,6 +151,8 @@ bitset_t parser_read_board(parser_t p, size_t n) {
     for (size_t i = 0, j = n_bin_digits - 1; i < j; ++i, --j)
       bitset_swap(board, i, j);
   }
+
+  parser_eat_spaces(p, 0);
 
   parser_eat_trailing_whitespace(p);
 
