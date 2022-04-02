@@ -65,5 +65,6 @@ test_error_0: make_release
 prepare: clean
 	tar -czvf ipp-male-zadanie.tar.gz \
 		src/*.c src/*.h makefile test.py test.sh
+	tokei
 
 -include $(DEPS)

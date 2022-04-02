@@ -11,9 +11,11 @@ void throw_error(int code, char *info) {
   // check that here, and only here.
   if (ferror(stdin)) code = 0, info = "<input stream error>";
 
-#if 1
+// Detailed error messages, greatly help debugging and can be used by test.py.
+#if 0
   fprintf(stdout, "<\033[0;91m%s ∴ %i\033[0m>", info, code);
 #endif
+
   fprintf(stderr, "ERROR %i\n", code);
 
   clean_up(), exit(-1);

@@ -13,9 +13,7 @@ import re
 from sys import stderr
 from textwrap import indent
 
-parser = ArgumentParser(description="Test the program.",
-                        epilog="Skips everything in the output between angular \
-                            parentheses, e.g. '<error>'.")
+parser = ArgumentParser(description="Test the program.")
 parser.add_argument("--prog", "-p", type=str,
                     help="The program.", default="./labyrinth")
 parser.add_argument("--dir", "-d", type=str, default="tests2/",
@@ -48,6 +46,9 @@ parser.add_argument("--timeout", type=int, default=99999,
                             detect these cases, please consult the stderr \
                                 and stdout to make an informed decision on \
                                     whether the program was aborted or not.")
+parser.add_argument("--ignore-angles", action="store_true",
+                    help="Ignore everything in the output between matching \
+                        < and > characters.")
 
 args = parser.parse_args()
 
@@ -121,6 +122,8 @@ white = '\033[37m'
 gray = '\033[30;1m'
 reset = '\033[0m'
 
+if not args.ignore_angles:
+    assert not args.standardize, "won't find any detailed error messages"
 
 print(f"{len(cases)} cases to go thru")
 not_ok = []
@@ -153,9 +156,14 @@ try:
             prog_stderr = "\n".join(real)
             valgrind_out = "\n".join(not_real)
 
-        out_ok = re.sub(r"<.*>", "", prog_stdout) == case.stdout
+        out_reduced = prog_stdout
+        if args.ignore_angles:
+            out_reduced = re.sub(r"<.*>", "", out_reduced)
+        out_ok = out_reduced == case.stdout
 
-        err_reduced = re.sub(r"<.*>", "", prog_stderr)
+        err_reduced = prog_stderr
+        if args.ignore_angles:
+            err_reduced = re.sub(r"<.*>", "", prog_stderr)
         if not use_valgrind:
             err_ok = err_reduced == case.stderr
         else:
