@@ -37,9 +37,10 @@ grid_t new_grid(vector_t n) {
                                        vector_get(this->n, i - 1), &overflow));
   }
 
-  // This will throw ERROR 1 if the volume of the grid is larger than SIZE_MAX.
-  // Some tests disagree and want ERROR 0 in these cases.
-  parser_error_if(overflow);
+  // This will throw ERROR 0 if the volume of the grid is larger than SIZE_MAX.
+  // This is for consistency with the fact that volume slightly lesser than
+  // SIZE_MAX would fail with ERROR 0 because of insufficient memory.
+  parser_error_retro_if(0, overflow);
   parser_error_if(grid_volume(this) == 0);
 
   return this;
