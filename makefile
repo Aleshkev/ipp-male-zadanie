@@ -53,10 +53,12 @@ make_debug: clean
 test_valid: make_release
 	python3 ./test.py -e.
 test_invalid: make_release
-	python3 ./test.py -e12345
+	python3 ./test.py -e12345 --standardize
 test_memory: make_debug
-	python3 ./test.py -e.12345 --valgrind
+	python3 ./test.py -e.12345 --valgrind --standardize
 test_all: make_release
 	python3 ./test.py -e.012345
+test_error_0: make_release
+	python3 ./test.py -e0 --timeout 5
 
 -include $(DEPS)
