@@ -14,6 +14,8 @@ void throw_error(int code, char *info) {
 // Detailed error messages, greatly help debugging and can be used by test.py.
 #if 0
   fprintf(stdout, "<\033[0;91m%s ∴ %i\033[0m>", info, code);
+#else
+  (void)info;
 #endif
 
   fprintf(stderr, "ERROR %i\n", code);

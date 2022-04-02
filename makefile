@@ -12,10 +12,9 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CC := gcc
 
 CFLAGS += $(INC_FLAGS) \
- -Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-unused-variable -Wno-implicit-fallthrough \
- -Werror-implicit-function-declaration
+ -Wall -Wextra -Wpedantic \
+ -Werror-implicit-function-declaration \
  -std=c17
-
 
 ifdef DEBUG
 CFLAGS += -O0 -g
