@@ -1,3 +1,4 @@
+#include "bfs.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -12,9 +13,7 @@
 // settings, or SIZE_MAX if there is no clear path. Writes over the
 // board object.
 size_t bfs(grid_t grid, bitset_t board, size_t start, size_t stop) {
-  // printf("%zu %zu %zu\n", start, stop, grid_volume(grid));
-
-  bitset_t visited = board;
+  bitset_t visited = board;  // To save memory.
 
   size_t layer_i = 0;
   vector_t *layers;
@@ -25,9 +24,9 @@ size_t bfs(grid_t grid, bitset_t board, size_t start, size_t stop) {
 
   vector_append(THIS_LAYER, start);
   for (;;) {
-    // vector_print(THIS_LAYER), printf("\n");
     if (vector_size(THIS_LAYER) == 0) return SIZE_MAX;
     assert(vector_size(NEXT_LAYER) == 0);
+
     while (vector_size(THIS_LAYER) > 0) {
       size_t a = vector_pop(THIS_LAYER);
 
@@ -36,9 +35,7 @@ size_t bfs(grid_t grid, bitset_t board, size_t start, size_t stop) {
       for (size_t ax = 0; ax < grid_k(grid); ++ax) {
         for (int dt = -1; dt <= 1; dt += 2) {
           size_t b = grid_move(grid, a, ax, dt);
-          if (b == SIZE_MAX) continue;
-          // printf("%zu\n", b);
-          if (bitset_get(visited, b)) continue;
+          if (b == SIZE_MAX || bitset_get(visited, b)) continue;
           bitset_set(visited, b, true);
           vector_append(NEXT_LAYER, b);
         }
@@ -46,5 +43,4 @@ size_t bfs(grid_t grid, bitset_t board, size_t start, size_t stop) {
     }
     ++layer_i;
   }
-  assert(false);
 }

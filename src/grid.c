@@ -1,9 +1,11 @@
+#include "grid.h"
 
 #include <assert.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
+#include "arithmetic.h"
 #include "error.h"
 #include "vector.h"
 
@@ -22,18 +24,27 @@ grid_t new_grid(vector_t n) {
 
   this->n_pref = new_vector();
   vector_append(this->n_pref, 1);
+  bool overflow = false;
   for (size_t i = 1; i <= this->k; ++i) {
-    vector_append(this->n_pref,
-                  vector_get(this->n_pref, i - 1) * vector_get(this->n, i - 1));
+    vector_append(this->n_pref, mulcap(vector_get(this->n_pref, i - 1),
+                                       vector_get(this->n, i - 1), &overflow));
   }
+  CHECK_INPUT(1, overflow);
+  CHECK_INPUT(1, grid_volume(this) == 0);
+  CHECK_INPUT(0, grid_volume(this) == SIZE_MAX);
 
   return this;
 }
 
-size_t grid_rank(grid_t this, vector_t vec) {
+size_t grid_rank(grid_t this, vector_t vec, int line_to_error) {
+  CHECK_INPUT(line_to_error, vector_size(vec) != this->k);
   size_t x = 0;
   for (size_t i = 0; i < vector_size(vec); ++i) {
-    if (vector_get(vec, i) > vector_get(this->n, i)) return SIZE_MAX;
+    size_t coord = vector_get(vec, i);
+    CHECK_INPUT(line_to_error, coord < 1);
+    // vector_print(this->n), printf(" %zu %zu\n", coord, i);
+    CHECK_INPUT(line_to_error, coord > vector_get(this->n, i));
+
     x += (vector_get(vec, i) - 1) * vector_get(this->n_pref, i);
   }
   return x;
@@ -44,6 +55,9 @@ size_t grid_unrank(grid_t this, size_t id, size_t axis) {
          vector_get(this->n_pref, axis);
 }
 
+// Return the id of the coordinates represented by the id, shifted by delta
+// along the axis, or SIZE_MAX if the new coordinates would fall outside the
+// grid bounds.
 size_t grid_move(grid_t this, size_t id, size_t axis, int delta) {
   assert(delta == -1 || delta == +1);
 

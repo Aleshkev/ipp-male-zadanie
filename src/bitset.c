@@ -1,3 +1,5 @@
+#include "bitset.h"
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -26,15 +28,15 @@ bitset_t new_bitset(size_t n) {
 #define J (i % BITS_PER_CELL)
 
 // Read the i-th bit.
-bool bitset_get(bitset_t o, size_t i) {
-  assert(i < o->n_bits);
-  return o->cells[I] & (1U << J) ? true : false;
+bool bitset_get(bitset_t this, size_t i) {
+  assert(i < this->n_bits);
+  return this->cells[I] & (1U << J) ? true : false;
 }
 
 // Set the i-th bit.
-void bitset_set(bitset_t o, size_t i, bool x) {
-  assert(i < o->n_bits);
-  o->cells[I] = (o->cells[I] & ~(1UL << J)) | (x << J);
+void bitset_set(bitset_t this, size_t i, bool x) {
+  assert(i < this->n_bits);
+  this->cells[I] = (this->cells[I] & ~(1U << J)) | ((unsigned)x << J);
 }
 
 // Swap the values of the i-th and j-th bits.
@@ -44,10 +46,9 @@ void bitset_swap(bitset_t this, size_t i, size_t j) {
 }
 
 // Print the bitset. 0-th element is to the right.
-void bitset_print(bitset_t o) {
-  printf("{");
-  for (size_t i = o->n_bits; i-- > 0;) {
-    printf("%i", bitset_get(o, i));
+void bitset_print(bitset_t this) {
+  printf("(bitset_t)");
+  for (size_t i = this->n_bits; i-- > 0;) {
+    printf("%i", bitset_get(this, i));
   }
-  printf("}");
 }

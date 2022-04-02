@@ -1,14 +1,7 @@
-
 #include "bitset.h"
 #include "vector.h"
 
-struct _parser_impl;
-typedef struct _parser_impl *parser_t;
-
-parser_t new_parser();
-vector_t parser_read_vector(parser_t p);
-bitset_t parser_read_board(parser_t p, size_t n);
-void parser_eat_trailing_whitespace(parser_t p);
-
-bool parser_is_input_ok(parser_t p);
-bool parser_is_system_ok(parser_t p);
+vector_t parser_eat_vector(int line);
+bitset_t parser_eat_board(int line, size_t n);
+void parser_eat_newline(int line);
+void parser_eat_eof(int line);
