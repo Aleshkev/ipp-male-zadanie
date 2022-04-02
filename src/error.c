@@ -7,10 +7,11 @@
 void memory_error() { input_error(0, "<memory error>"); }
 
 void input_error(int code, char *info) {
-  // Important.
+  // Physical input error will produce invalid input for the parser. We need to
+  // check that here, and only here.
   if (ferror(stdin)) code = 0, info = "<input stream error>";
 
-#if 1
+#if 0
   fprintf(stdout, "<\033[0;91m%s ∴ %i\033[0m>", info, code);
 #endif
   fprintf(stderr, "ERROR %i\n", code);
@@ -19,7 +20,7 @@ void input_error(int code, char *info) {
 }
 
 // To make sure we don't leak memory, we keep references to all allocated
-// memory (and not released by safe_realloc) and explicitly free all of it at
+// memory (not yet released by safe_realloc) and explicitly free all of it at
 // some point. The number of objects in this project is bounded by a
 // source-code-dependent constant, so a limited buffer here doesn't create any
 // restrictions on input sizes.

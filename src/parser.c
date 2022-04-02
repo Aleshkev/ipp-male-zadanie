@@ -81,11 +81,11 @@ vector_t parser_eat_vector() {
   for (size_t i = 0; !isnewline(peekchar()) && peekchar() != EOF; ++i) {
     vector_append(v, parser_eat_unsigned());
     parser_eat_spaces(0);
-    // vector_print(v), printf("\n");
   }
   return v;
 }
 
+// Eat a bitset encoded using this funny form from the task specification.
 bitset_t parser_eat_board(size_t n) {
   bitset_t board = new_bitset(n);
 
@@ -98,7 +98,7 @@ bitset_t parser_eat_board(size_t n) {
     for (size_t i = 0; i < 5; ++i) {
       parser_eat_spaces(i == 0 ? 0 : 1);
       vector_append(nums, parser_eat_unsigned());
-      CHECK_INPUT(4, vector_get(nums, i) > UINT32_MAX);
+      CHECK_INPUT(line, vector_get(nums, i) > UINT32_MAX);
     }
     size_t a = vector_get(nums, 0), b = vector_get(nums, 1),
            m = vector_get(nums, 2), r = vector_get(nums, 3),
@@ -131,13 +131,11 @@ bitset_t parser_eat_board(size_t n) {
       int hex_digit = hexdigit(peekchar());
       getchar();
 
-      // printf(",");
       for (size_t i = 4; i-- > 0;) {
         int bin_digit = (((size_t)hex_digit) & (1 << i)) > 0;
         if (bin_digit == 0 && is_leading) continue;
         is_leading = false;
         CHECK_INPUT(4, n_bin_digits + 1 > n);
-        // if(n_bin_digits % 1000 == 0) printf("%zu %zu\n", n_bin_digits, n);
         bitset_set(board, n_bin_digits++, bin_digit);
       }
     }

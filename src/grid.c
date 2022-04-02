@@ -44,7 +44,6 @@ size_t grid_rank(grid_t this, vector_t vec, int line_to_error) {
   for (size_t i = 0; i < vector_size(vec); ++i) {
     size_t coord = vector_get(vec, i);
     CHECK_INPUT(line_to_error, coord < 1);
-    // vector_print(this->n), printf(" %zu %zu\n", coord, i);
     CHECK_INPUT(line_to_error, coord > vector_get(this->n, i));
 
     x += (vector_get(vec, i) - 1) * vector_get(this->n_pref, i);

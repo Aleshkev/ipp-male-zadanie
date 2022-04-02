@@ -41,4 +41,18 @@ clean:
 test:
 	bash ./test.sh ./labyrinth tests
 
+# Helpful configurations for testing & debugging.
+make_release: clean
+	make -B all
+make_debug: clean
+	make -B DEBUG=yes all
+test_valid: make_release
+	python3 ./test.py -e.
+test_invalid: make_release
+	python3 ./test.py -e12345
+test_memory: make_debug
+	python3 ./test.py -e.12345 --valgrind
+test_all: make_release
+	python3 ./test.py -e.012345
+
 -include $(DEPS)

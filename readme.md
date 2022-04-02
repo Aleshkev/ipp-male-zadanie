@@ -20,4 +20,3 @@ Jest sobie `makefile`. Domyślnie buduje w trybie takim release jakby, z flagami
   błąd to `ERROR 1` (nie `ERROR 2`), ponieważ znak nowej linii, który powinien się pojawić na wejściu, jest częścią pierwszej linijki.
 
 - Jeśli błędem jest, że początek/koniec szukanej ścieżki jest na zajętym polu, to błędem jest numer linii z tym początkiem/końcem.
-
