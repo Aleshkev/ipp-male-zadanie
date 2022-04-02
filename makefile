@@ -61,4 +61,9 @@ test_all: make_release
 test_error_0: make_release
 	python3 ./test.py -e0 --timeout 5
 
+# Prepare for submitting to Moodle
+prepare: clean
+	tar -czvf ipp-male-zadanie.tar.gz \
+		src/*.c src/*.h makefile test.py test.sh
+
 -include $(DEPS)
