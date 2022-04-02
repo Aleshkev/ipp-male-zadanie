@@ -1,3 +1,6 @@
+# Welcome to the makefile file.
+# `make` will make in release mode, `make DEBUG=yes` will make in debug mode (for valgrind).
+# Use `make -B ...` if you're switching between these modes.
 
 SRCS := $(wildcard ./src/*.c)
 OBJS := $(addsuffix .o, $(basename $(SRCS)))
@@ -35,6 +38,7 @@ all: $(TARGET)
 
 .PHONY: clean
 clean:
+	@ $(RM) src/*.o
 	@ $(RM) $(TARGET) $(OBJS) $(DEPS)
 	@ $(RM) tests/*.prog.out tests/*.prog.err
 

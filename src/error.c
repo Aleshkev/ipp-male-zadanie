@@ -4,14 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void memory_error() { input_error(0, "<memory error>"); }
+void memory_error() { throw_error(0, "<memory error>"); }
 
-void input_error(int code, char *info) {
+void throw_error(int code, char *info) {
   // Physical input error will produce invalid input for the parser. We need to
   // check that here, and only here.
   if (ferror(stdin)) code = 0, info = "<input stream error>";
 
-#if 0
+#if 1
   fprintf(stdout, "<\033[0;91m%s ∴ %i\033[0m>", info, code);
 #endif
   fprintf(stderr, "ERROR %i\n", code);

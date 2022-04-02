@@ -7,6 +7,7 @@
 
 #include "arithmetic.h"
 #include "error.h"
+#include "parser.h"
 #include "vector.h"
 
 struct _grid_impl {
@@ -15,14 +16,18 @@ struct _grid_impl {
 };
 typedef struct _grid_impl *grid_t;
 
+// A grid is an abstract object that stores information about and operates on
+// the dimensions of the board. It doesn't really need to exist, but it does,
+// and the code looks a bit tidier.
 grid_t new_grid(vector_t n) {
   grid_t this;
   ALLOC(this);
 
   // Yes, this is a redundant copy of the vector. We're wasting dozens of bytes
-  // here. Please forgive.
+  // here.
   this->n = vector_copy(n);
   this->k = vector_size(this->n);
+  parser_error_if(this->k == 0);
 
   this->n_pref = new_vector();
   vector_append(this->n_pref, 1);
@@ -31,26 +36,32 @@ grid_t new_grid(vector_t n) {
     vector_append(this->n_pref, mulcap(vector_get(this->n_pref, i - 1),
                                        vector_get(this->n, i - 1), &overflow));
   }
-  CHECK_INPUT(1, overflow);
-  CHECK_INPUT(1, grid_volume(this) == 0);
-  CHECK_INPUT(0, grid_volume(this) == SIZE_MAX);
+
+  // This will throw ERROR 1 if the volume of the grid is larger than SIZE_MAX.
+  // Some tests disagree and want ERROR 0 in these cases.
+  parser_error_if(overflow);
+  parser_error_if(grid_volume(this) == 0);
 
   return this;
 }
 
-size_t grid_rank(grid_t this, vector_t vec, int line_to_error) {
-  CHECK_INPUT(line_to_error, vector_size(vec) != this->k);
+// Convert k numbers into a single number, unambiguously representing the
+// position.
+size_t grid_rank(grid_t this, vector_t vec) {
+  parser_error_if(vector_size(vec) != this->k);
   size_t x = 0;
   for (size_t i = 0; i < vector_size(vec); ++i) {
     size_t coord = vector_get(vec, i);
-    CHECK_INPUT(line_to_error, coord < 1);
-    CHECK_INPUT(line_to_error, coord > vector_get(this->n, i));
+    parser_error_if(coord < 1);
+    parser_error_if(coord > vector_get(this->n, i));
 
     x += (vector_get(vec, i) - 1) * vector_get(this->n_pref, i);
   }
   return x;
 }
 
+// Reverse grid_rank(), along one of the axes. (Get one of the original
+// coordinates.)
 size_t grid_unrank(grid_t this, size_t id, size_t axis) {
   return (id % vector_get(this->n_pref, axis + 1)) /
          vector_get(this->n_pref, axis);
@@ -66,12 +77,11 @@ size_t grid_move(grid_t this, size_t id, size_t axis, int delta) {
   if (x == 0 && delta == -1) return SIZE_MAX;
   if (x == vector_get(this->n, axis) - 1 && delta == 1) return SIZE_MAX;
 
-  size_t id2 = id + delta * vector_get(this->n_pref, axis);
-
-  // printf("%zu -> %zu\n", id, id2);
-
-  return id2;
+  return id + delta * vector_get(this->n_pref, axis);
 }
 
+// The total number of fields the board has.
 size_t grid_volume(grid_t this) { return vector_get(this->n_pref, this->k); }
+
+// The number of dimensions the board has.
 size_t grid_k(grid_t this) { return this->k; }

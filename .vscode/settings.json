@@ -40,6 +40,9 @@
         "struct_file.h": "c",
         "parser.h": "c",
         "stdint.h": "c",
-        "bitset.h": "c"
-    }
+        "bitset.h": "c",
+        "typeinfo": "c"
+    },
+    "python.formatting.autopep8Args": [
+    ]
 }

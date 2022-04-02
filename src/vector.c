@@ -12,7 +12,8 @@ struct _vector_impl {
 };
 typedef struct _vector_impl *vector_t;
 
-// Create an empty vector.
+// Create an empty vector. A vector stores integers, and resizes itself if
+// necessary.
 vector_t new_vector() {
   vector_t v;
   ALLOC(v);
@@ -50,7 +51,9 @@ size_t vector_pop(vector_t v) {
   return x;
 }
 
+// Number of elements the vector holds.
 size_t vector_size(vector_t v) { return v->n_elements; }
+
 size_t *vector_ref(vector_t v, size_t i) {
   assert(i < v->n_elements);
   return &v->elements[i];
