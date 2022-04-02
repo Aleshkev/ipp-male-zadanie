@@ -19,6 +19,8 @@ grid_t new_grid(vector_t n) {
   grid_t this;
   ALLOC(this);
 
+  // Yes, this is a redundant copy of the vector. We're wasting dozens of bytes
+  // here. Please forgive.
   this->n = vector_copy(n);
   this->k = vector_size(this->n);
 

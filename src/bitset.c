@@ -7,6 +7,7 @@
 
 #include "error.h"
 
+
 struct _bitset_impl {
   size_t n_bits, n_cells;
   unsigned *cells;

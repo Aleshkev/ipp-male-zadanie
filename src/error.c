@@ -50,6 +50,6 @@ void *safe_realloc(void *ptr, size_t n_items, size_t item_size) {
 }
 
 void clean_up() {
-  // for (size_t i = 0; i < n_allocated; ++i) free(allocated[i]);
-  // n_allocated = 0;
+  for (size_t i = 0; i < n_allocated; ++i) free(allocated[i]);
+  n_allocated = 0;
 }

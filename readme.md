@@ -1,9 +1,17 @@
 
 # IPP małe zadanie
 
-Decyzje co do błędów (świadome):
+### Testowanie
 
-- Bardzo duże testy zużywają mało pamięci, więc program próbuje liczyć wynik nawet w przypadku gdzie niepraktycznie długo zajmie go rzeczywiście znalezienie.
+Jest `test.sh` spełniający warunki z zadania, ale tak naprawdę jest dużo fajniejszy `test.py` (`test.py --help` żeby zobaczyć jak bardzo fajny), którego pisanie w bashu by było marnowaniem czasu.
+
+### Budowanie
+
+Jest sobie `makefile`. Domyślnie buduje w trybie takim release jakby, z flagami jak w treści zadania. Można dać `make -B DEBUG=yes` żeby się kompilowało w trybie żeby działał valgrind i debugowanie. Potem trzeba `make -B` żeby wrócić do kompilowania bez debugu.
+
+### Decyzje co do błędów (świadome)
+
+- Bardzo duże testy zużywają mało pamięci, więc program próbuje liczyć wynik nawet w przypadku gdzie niepraktycznie długo zajmie go rzeczywiście obliczenie.
 
 - W przykładzie
 

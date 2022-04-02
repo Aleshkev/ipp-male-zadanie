@@ -13,7 +13,8 @@
 #include "error.h"
 #include "vector.h"
 
-// This is global, because the input stream is global anyway.
+// The line of the input we're reading right now. This is a global, because the
+// input stream is global anyway.
 int line = 1;
 
 // Peek at the next character in the input stream.
@@ -35,8 +36,7 @@ int hexdigit(int c) {
                                 : -1;
 }
 
-// Eat a single non-negative number.
-size_t parser_eat_unsigned(int line) {
+size_t parser_eat_unsigned() {
   bool overflow = false;
   size_t x = 0, n_digits = 0;
   for (; isdigit(peekchar()); ++n_digits)
@@ -46,58 +46,58 @@ size_t parser_eat_unsigned(int line) {
   return x;
 }
 
-void parser_eat_spaces(int line, size_t at_least_so_many) {
+void parser_eat_spaces(size_t at_least_so_many) {
   size_t spaces_eaten = 0;
   for (; isspace(peekchar()) && !isnewline(peekchar()); getchar())
     ++spaces_eaten;
   CHECK_INPUT(line, spaces_eaten < at_least_so_many);
 }
 
-void parser_eat_symbol(int line, char symbol) {
+// Eat a single character, assert it's the symbol.
+void parser_eat_symbol(char symbol) {
   CHECK_INPUT(line, peekchar() != symbol);
   getchar();
 }
 
-// Eat a newline character. The only function that should be eating any.
-void parser_eat_newline(int line) {
+// Eat a newline character. The only function that should be using any, as it
+// needs to update the global line counter.
+void parser_eat_newline() {
   CHECK_INPUT(line, !isnewline(peekchar()));
   getchar();
+  ++line;
 }
 
-void parser_eat_eof(int line) {
-  if (peekchar() != EOF) parser_eat_newline(line);
-  parser_eat_symbol(line, EOF);
-}
-
-void parser_eat_trailing_whitespace(int line) {
-  while (isspace(peekchar())) getchar();
-  CHECK_INPUT(line, peekchar() != EOF);
+// Eat an end-of-file. Because apparently no newline at the end of the input is
+// valid, it handles eating the last newline in the input as well.
+void parser_eat_eof() {
+  if (peekchar() != EOF) parser_eat_newline();
+  parser_eat_symbol(EOF);
 }
 
 // Read numbers until the end of the line.
-vector_t parser_eat_vector(int line) {
+vector_t parser_eat_vector() {
   vector_t v = new_vector();
-  parser_eat_spaces(line, 0);
+  parser_eat_spaces(0);
   for (size_t i = 0; !isnewline(peekchar()) && peekchar() != EOF; ++i) {
-    vector_append(v, parser_eat_unsigned(line));
-    parser_eat_spaces(line, 0);
+    vector_append(v, parser_eat_unsigned());
+    parser_eat_spaces(0);
     // vector_print(v), printf("\n");
   }
   return v;
 }
 
-bitset_t parser_eat_board(int line, size_t n) {
+bitset_t parser_eat_board(size_t n) {
   bitset_t board = new_bitset(n);
 
-  parser_eat_spaces(line, 0);
+  parser_eat_spaces(0);
 
   if (peekchar() == 'R') {
-    parser_eat_symbol(line, 'R');
+    parser_eat_symbol('R');
 
     vector_t nums = new_vector();
     for (size_t i = 0; i < 5; ++i) {
-      parser_eat_spaces(line, (i == 0 ? 0 : 1));
-      vector_append(nums, parser_eat_unsigned(line));
+      parser_eat_spaces(i == 0 ? 0 : 1);
+      vector_append(nums, parser_eat_unsigned());
       CHECK_INPUT(4, vector_get(nums, i) > UINT32_MAX);
     }
     size_t a = vector_get(nums, 0), b = vector_get(nums, 1),
@@ -119,7 +119,7 @@ bitset_t parser_eat_board(int line, size_t n) {
     }
 
   } else {
-    parser_eat_symbol(line, '0'), parser_eat_symbol(line, 'x');
+    parser_eat_symbol('0'), parser_eat_symbol('x');
 
     // First we read the number so that the i-th most significant digit is in
     // the i-th bit of the bitset.
@@ -149,7 +149,7 @@ bitset_t parser_eat_board(int line, size_t n) {
     for (size_t i = 0, j = n_bin_digits - 1; i < j; ++i, --j)
       bitset_swap(board, i, j);
   }
-  parser_eat_spaces(line, 0);
+  parser_eat_spaces(0);
 
   return board;
 }

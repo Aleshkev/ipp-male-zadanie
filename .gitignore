@@ -6,3 +6,5 @@ mmap_address.bin
 
 tests/
 tests2/
+
+.vscode/*.log
