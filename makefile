@@ -12,10 +12,9 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CC := gcc
 
 CFLAGS += $(INC_FLAGS) \
- -Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-unused-variable -Wno-implicit-fallthrough \
- -Werror-implicit-function-declaration
+ -Wall -Wextra -Wpedantic \
+ -Werror-implicit-function-declaration \
  -std=c17
-
 
 ifdef DEBUG
 CFLAGS += -O0 -g
@@ -60,5 +59,11 @@ test_all: make_release
 	python3 ./test.py -e.012345
 test_error_0: make_release
 	python3 ./test.py -e0 --timeout 5
+
+# Prepare for submitting to Moodle
+prepare: clean
+	tar -czvf ipp-male-zadanie.tar.gz \
+		src/*.c src/*.h makefile test.py test.sh
+	tokei
 
 -include $(DEPS)

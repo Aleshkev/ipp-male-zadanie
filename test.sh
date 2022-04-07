@@ -20,7 +20,7 @@ for f in $(find $dir -name '*.in'); do
     prog_out=${f%in}prog.out
     prog_err=${f%in}prog.err
 
-    echo -n "Example $f"
+    echo -n "Example $f "
 
     $prog <"$in" >"$prog_out" 2>"$prog_err"
     cmp -s "$out" "$prog_out"
@@ -34,16 +34,16 @@ for f in $(find $dir -name '*.in'); do
     grep -q "ERROR SUMMARY: 0 errors" "$prog_err"
     mem_ok=$?
 
-    if [ $out_ok -a $err_ok -a $mem_ok ]; then
-        echo -ne " works correctly."
+    if [ $out_ok == 0 ]  && [ $err_ok == 0 ] && [ $mem_ok == 0 ]; then
+        echo -ne "works correctly."
     else
-        if ! $out_ok; then
+        if [ $out_ok == 1 ]; then
             echo -ne "provides invalid stdout "
         fi
-        if ! $err_ok; then
+        if [ $err_ok == 1 ]; then
             echo -ne "provides invalid stderr "
         fi
-        if ! $mem_ok; then
+        if [ $mem_ok == 1 ]; then
             echo -ne "leaks memory or something "
         fi
     fi
