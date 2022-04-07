@@ -8,4 +8,6 @@ Należy napisać program poszukujący drogi w wielowymiarowym labiryncie.
 - skrypt w Bashu/Pythonie do testowania
 - zwalnianie pamięci (xd)
 
+![](./stats.png)
+
 Testy są dostępne [o tutaj](https://github.com/Kwasow/IPP_testy).
