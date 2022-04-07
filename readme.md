@@ -7,3 +7,5 @@ Należy napisać program poszukujący drogi w wielowymiarowym labiryncie.
 - `makefile` do budowania i testowania
 - skrypt w Bashu/Pythonie do testowania
 - zwalnianie pamięci (xd)
+
+Testy są dostępne [o tutaj](https://github.com/Kwasow/IPP_testy).
